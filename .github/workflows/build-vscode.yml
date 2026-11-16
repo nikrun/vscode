@@ -1,0 +1,50 @@
+name: Build vscode-nikrun Extension
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: build-vscode-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: "Compile & Validate Extension"
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Compile TypeScript
+        run: npm run compile
+
+      - name: Validate Extension JSON Assets
+        run: |
+          node -e "
+            const fs = require('fs');
+            for (const f of [
+              'package.json',
+              'language-configuration.json',
+              'syntaxes/objectpascal.tmLanguage.json',
+              'schemas/nik-yaml.schema.json'
+            ]) {
+              JSON.parse(fs.readFileSync(f, 'utf8'));
+              console.log('[OK] Parsed', f);
+            }
+          "

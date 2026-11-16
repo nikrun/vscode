@@ -1,0 +1,239 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "Object Pascal (Nikrun)",
+  "scopeName": "source.pascal.nikrun",
+  "patterns": [
+    { "include": "#directives" },
+    { "include": "#comments" },
+    { "include": "#strings" },
+    { "include": "#attributes" },
+    { "include": "#numbers" },
+    { "include": "#routine-declaration" },
+    { "include": "#escaped-identifiers" },
+    { "include": "#member-names" },
+    { "include": "#keywords" },
+    { "include": "#builtin-types" },
+    { "include": "#operators" }
+  ],
+  "repository": {
+    "directives": {
+      "patterns": [
+        {
+          "name": "meta.preprocessor.directive.pascal",
+          "begin": "\\{\\$",
+          "end": "\\}",
+          "beginCaptures": {
+            "0": { "name": "punctuation.definition.directive.begin.pascal" }
+          },
+          "endCaptures": {
+            "0": { "name": "punctuation.definition.directive.end.pascal" }
+          },
+          "patterns": [
+            { "include": "#directive-body" }
+          ]
+        },
+        {
+          "name": "meta.preprocessor.directive.pascal",
+          "begin": "\\(\\*\\$",
+          "end": "\\*\\)",
+          "beginCaptures": {
+            "0": { "name": "punctuation.definition.directive.begin.pascal" }
+          },
+          "endCaptures": {
+            "0": { "name": "punctuation.definition.directive.end.pascal" }
+          },
+          "patterns": [
+            { "include": "#directive-body" }
+          ]
+        }
+      ]
+    },
+    "directive-body": {
+      "patterns": [
+        {
+          "name": "keyword.control.directive.pascal",
+          "match": "(?i)\\b(MODE|MODESWITCH|DEFINE|UNDEF|IFDEF|IFNDEF|IFOPT|IF|ELSEIF|ELIF|ELSE|ENDIF|IFEND|REGION|ENDREGION|MESSAGE|WARN|HINT|NOTE|FATAL|ERROR|LINK|LINKLIB|APPTYPE|CODEPAGE|PACKRECORDS|PACKENUM|ALIGN|MINENUMSIZE|SCOPEDENUMS)\\b"
+        },
+        {
+          "name": "support.function.directive.pascal",
+          "match": "(?i)\\b(DEFINED|DECLARED|OPTION|SIZEOF)\\b"
+        },
+        {
+          "name": "keyword.operator.logical.directive.pascal",
+          "match": "(?i)\\b(AND|OR|NOT|XOR|SHL|SHR)\\b|&&|\\|\\||!"
+        },
+        {
+          "name": "keyword.operator.comparison.directive.pascal",
+          "match": "==|=|<>|!=|<=|>=|<|>"
+        },
+        {
+          "name": "constant.language.directive.pascal",
+          "match": "(?i)\\b(TRUE|FALSE|ON|OFF|DEFAULT|OBJFPC|DELPHI|DELPHIUNICODE|FPC|MACPAS|TP|ISO|EXTENDEDPAS)\\b"
+        },
+        { "include": "#strings" },
+        {
+          "name": "constant.numeric.directive.pascal",
+          "match": "\\$[0-9A-Fa-f]+|\\b\\d+(\\.\\d+)?\\b"
+        },
+        {
+          "name": "variable.other.directive.pascal",
+          "match": "\\b[A-Za-z_][A-Za-z0-9_]*\\b"
+        }
+      ]
+    },
+    "comments": {
+      "patterns": [
+        {
+          "name": "comment.line.double-slash.doc.pascal",
+          "match": "///.*$"
+        },
+        {
+          "name": "comment.line.double-slash.pascal",
+          "match": "//.*$"
+        },
+        {
+          "name": "comment.block.brace.pascal",
+          "begin": "\\{(?!\\$)",
+          "end": "\\}"
+        },
+        {
+          "name": "comment.block.paren.pascal",
+          "begin": "\\(\\*(?!\\$)",
+          "end": "\\*\\)"
+        }
+      ]
+    },
+    "strings": {
+      "patterns": [
+        {
+          "name": "string.quoted.single.pascal",
+          "begin": "'",
+          "end": "'|$",
+          "patterns": [
+            {
+              "name": "constant.character.escape.pascal",
+              "match": "''"
+            }
+          ]
+        },
+        {
+          "name": "constant.character.numeric.pascal",
+          "match": "#(?:\\$[0-9A-Fa-f]+|\\d+)"
+        }
+      ]
+    },
+    "attributes": {
+      "name": "meta.attribute.pascal",
+      "begin": "^\\s*\\[(?=\\s*[A-Za-z_][A-Za-z0-9_.]*\\s*(?:\\(|\\]|,))",
+      "beginCaptures": {
+        "0": { "name": "punctuation.definition.attribute.begin.pascal" }
+      },
+      "end": "\\]",
+      "endCaptures": {
+        "0": { "name": "punctuation.definition.attribute.end.pascal" }
+      },
+      "patterns": [
+        { "include": "#strings" },
+        { "include": "#numbers" },
+        {
+          "name": "entity.other.attribute-name.pascal",
+          "match": "\\b[A-Za-z_][A-Za-z0-9_.]*\\b"
+        },
+        {
+          "name": "punctuation.separator.pascal",
+          "match": "[,:]"
+        }
+      ]
+    },
+    "escaped-identifiers": {
+      "patterns": [
+        {
+          "name": "variable.other.escaped.pascal",
+          "match": "&[A-Za-z_][A-Za-z0-9_]*"
+        }
+      ]
+    },
+    "member-names": {
+      "patterns": [
+        {
+          "match": "(?<!\\.)(\\.)\\s*([A-Za-z_][A-Za-z0-9_]*)",
+          "captures": {
+            "1": { "name": "punctuation.accessor.pascal" }
+          }
+        }
+      ]
+    },
+    "numbers": {
+      "patterns": [
+        {
+          "name": "constant.numeric.hex.pascal",
+          "match": "\\$[0-9A-Fa-f][0-9A-Fa-f_]*"
+        },
+        {
+          "name": "constant.numeric.binary.pascal",
+          "match": "%[01][01_]*"
+        },
+        {
+          "name": "constant.numeric.octal.pascal",
+          "match": "&[0-7][0-7_]*"
+        },
+        {
+          "name": "constant.numeric.float.pascal",
+          "match": "\\b\\d[\\d_]*\\.\\d[\\d_]*(?:[eE][+-]?\\d+)?\\b"
+        },
+        {
+          "name": "constant.numeric.integer.pascal",
+          "match": "\\b\\d[\\d_]*(?:[eE][+-]?\\d+)?\\b"
+        }
+      ]
+    },
+    "routine-declaration": {
+      "match": "(?i)\\b(procedure|function|constructor|destructor|operator)\\s+((?:[A-Za-z_][A-Za-z0-9_]*\\.)?)([A-Za-z_][A-Za-z0-9_]*)",
+      "captures": {
+        "1": { "name": "keyword.other.routine.pascal" },
+        "2": { "name": "entity.name.type.class.pascal" },
+        "3": { "name": "entity.name.function.pascal" }
+      }
+    },
+    "keywords": {
+      "patterns": [
+        {
+          "name": "keyword.control.pascal",
+          "match": "(?i)\\b(begin|end|if|then|else|case|of|for|to|downto|do|while|repeat|until|with|try|except|finally|on|raise|goto|exit|break|continue)\\b"
+        },
+        {
+          "name": "keyword.other.module.pascal",
+          "match": "(?i)\\b(program|unit|library|package|interface|implementation|initialization|finalization|uses|exports)\\b"
+        },
+        {
+          "name": "keyword.other.declaration.pascal",
+          "match": "(?i)\\b(type|var|threadvar|const|resourcestring|out|constref|label|property|read|write|default|stored|nodefault|implements|array|set|file)\\b"
+        },
+        {
+          "name": "keyword.other.oop.pascal",
+          "match": "(?i)\\b(class|record|object|dispinterface|packed|bitpacked|helper|generic|specialize|strict|private|protected|public|published|virtual|override|abstract|reintroduce|overload|inline|static|sealed|final|inherited|self)\\b"
+        },
+        {
+          "name": "keyword.other.modifiers.pascal",
+          "match": "(?i)\\b(cdecl|stdcall|register|pascal|safecall|winapi|external|forward|varargs|noreturn|deprecated|experimental|platform|unimplemented|absolute|reference)\\b"
+        },
+        {
+          "name": "constant.language.pascal",
+          "match": "(?i)\\b(true|false|nil|result)\\b"
+        },
+        {
+          "name": "keyword.operator.word.pascal",
+          "match": "(?i)\\b(and|or|xor|not|div|mod|shl|shr|in|is|as)\\b"
+        }
+      ]
+    },
+    "builtin-types": {
+      "name": "storage.type.primitive.pascal",
+      "match": "(?i)\\b(Boolean|ByteBool|WordBool|LongBool|QWordBool|Char|AnsiChar|WideChar|UnicodeChar|ShortInt|SmallInt|Integer|LongInt|Int64|Byte|Word|Cardinal|LongWord|UInt64|QWord|NativeInt|NativeUInt|PtrInt|PtrUInt|SizeInt|SizeUInt|Int8|Int16|Int32|UInt8|UInt16|UInt32|Single|Double|Extended|Comp|Currency|Real|String|ShortString|AnsiString|RawByteString|UTF8String|UnicodeString|WideString|Pointer|PChar|PAnsiChar|PWideChar|PByte|Variant|OleVariant|Text|TextFile|TObject|TClass|IInterface|IUnknown|Exception)\\b"
+    },
+    "operators": {
+      "name": "keyword.operator.symbolic.pascal",
+      "match": ":=|<=|>=|<>|\\+=|-=|\\*=|/=|\\.\\.|[+\\-*/=@^<>]"
+    }
+  }
+}

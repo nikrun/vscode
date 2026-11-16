@@ -1,0 +1,345 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://nikrun.dev/schemas/nik-yaml-v1.schema.json",
+  "title": "Nikrun Project Manifest (nik.yaml)",
+  "description": "Declarative Free Pascal / Object Pascal project, library, or package manifest for Nikrun.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": {
+      "type": "integer",
+      "const": 1,
+      "description": "Manifest schema version (must be 1)."
+    },
+    "program": {
+      "$ref": "#/definitions/programOrLibraryRoot",
+      "description": "Defines an executable Free Pascal application (`program MyApp;`)."
+    },
+    "library": {
+      "$ref": "#/definitions/programOrLibraryRoot",
+      "description": "Defines a native shared library (`.dll` / `lib*.so` / `lib*.dylib`)."
+    },
+    "package": {
+      "$ref": "#/definitions/packageRoot",
+      "description": "Defines a source-first reusable Object Pascal unit package."
+    }
+  },
+  "oneOf": [
+    { "required": ["program"] },
+    { "required": ["library"] },
+    { "required": ["package"] }
+  ],
+  "definitions": {
+    "toolchainSection": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "fpc": {
+          "type": "string",
+          "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
+          "description": "Required exact Free Pascal SDK version (e.g. `3.2.2`, `3.2.4`, `3.3.1`)."
+        },
+        "target": {
+          "type": "string",
+          "description": "Target CPU-OS triplet or `native`.",
+          "examples": [
+            "native",
+            "x86_64-win64",
+            "aarch64-win64",
+            "x86_64-linux",
+            "aarch64-linux",
+            "x86_64-darwin",
+            "aarch64-darwin"
+          ]
+        }
+      }
+    },
+    "warningsSection": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "asErrors": {
+          "type": "boolean",
+          "description": "Treat compiler warnings as errors (`-Sew`)."
+        },
+        "hints": {
+          "type": "boolean",
+          "description": "Enable or disable compiler hints (`-vh` / `-vh-`)."
+        },
+        "notes": {
+          "type": "boolean",
+          "description": "Enable or disable compiler notes (`-vn` / `-vn-`)."
+        },
+        "suppress": {
+          "type": "array",
+          "items": {
+            "oneOf": [
+              { "type": "integer" },
+              { "type": "string" }
+            ]
+          },
+          "description": "FPC message numbers to suppress (`-vm<id>`, e.g. `[5024]`)."
+        }
+      }
+    },
+    "buildSection": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "mode": {
+          "type": "string",
+          "enum": [
+            "objfpc",
+            "delphi",
+            "delphiunicode",
+            "fpc",
+            "tp",
+            "macpas",
+            "iso",
+            "extendedpascal"
+          ],
+          "description": "Default Object Pascal syntax mode (`-M<mode>`)."
+        },
+        "longStrings": {
+          "type": "boolean",
+          "description": "Enable `AnsiString` by default (`{$H+}` / `-Sh`)."
+        },
+        "cOperators": {
+          "type": "boolean",
+          "description": "Enable C-style assignment operators `+=`, `-=`, `*=`, `/=` (`-Sc`)."
+        },
+        "modeSwitches": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Project-wide FPC modeswitches (`-M<switch>`, e.g. `advancedRecords`, `typeHelpers`, `functionReferences`, `anonymousFunctions`)."
+        },
+        "subsystem": {
+          "type": "string",
+          "enum": ["console", "gui"],
+          "description": "Target application subsystem (`gui` passes `-WG` on Windows)."
+        },
+        "pic": {
+          "oneOf": [
+            { "type": "boolean" },
+            { "type": "string", "enum": ["auto"] }
+          ],
+          "description": "Position-independent code generation (`auto`, `true` -> `-Cg`, `false` -> `-Cg-`)."
+        },
+        "cpuType": {
+          "type": "string",
+          "description": "Target CPU instruction set (`-Cp<cpu>`)."
+        },
+        "fpuType": {
+          "type": "string",
+          "description": "Target FPU instruction set (`-Cf<fpu>`)."
+        },
+        "stackSize": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Explicit stack size in bytes (`-Cs<bytes>`)."
+        },
+        "unitPaths": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Unit search directories (`-Fu<dir>`)."
+        },
+        "includePaths": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Include file search directories (`-Fi<dir>`)."
+        },
+        "libraryPaths": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Linker library search directories (`-Fl<dir>`)."
+        },
+        "objectPaths": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Object file search directories (`-Fo<dir>`)."
+        },
+        "resourcePaths": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Resource search directories (added to `-Fi` and `-Fo`)."
+        },
+        "defines": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Conditional compilation symbols (`-d<SYM>`). Use `\"$reset\"` first in an overlay to replace inherited symbols."
+        },
+        "undefines": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Symbols to undefine (`-u<SYM>`)."
+        },
+        "debugInfo": {
+          "oneOf": [
+            { "type": "boolean" },
+            {
+              "type": "string",
+              "enum": ["none", "lineinfo", "dwarf2", "dwarf3", "stabs", "external"]
+            }
+          ],
+          "description": "Debug symbol format (`dwarf2`, `dwarf3`, `lineinfo`, `external`, `stabs`, or `none`)."
+        },
+        "heaptrc": {
+          "type": "boolean",
+          "description": "Link the `heaptrc` memory-leak detector (`-gh -gl`)."
+        },
+        "assertions": {
+          "type": "boolean",
+          "description": "Compile `Assert(...)` checks (`-Sa` / `-Sa-`)."
+        },
+        "checks": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["range", "overflow", "io", "stack", "object", "all", "none", "$reset"]
+          },
+          "description": "Runtime safety checks (`range`, `overflow`, `io`, `stack`, `object`, `all`, `none`)."
+        },
+        "warnings": {
+          "$ref": "#/definitions/warningsSection"
+        },
+        "optimization": {
+          "oneOf": [
+            { "type": "integer", "minimum": 0, "maximum": 4 },
+            { "type": "boolean" },
+            { "type": "string", "enum": ["none", "default"] }
+          ],
+          "description": "Compiler optimization level (`0`..`4`)."
+        },
+        "smartLink": {
+          "type": "boolean",
+          "description": "Create smartlinkable units and strip unused code (`-CX -XX`)."
+        },
+        "stripSymbols": {
+          "type": "boolean",
+          "description": "Strip symbols from the linked binary (`-Xs`)."
+        },
+        "linkLibraries": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Native libraries to link (`-k-l<lib>`)."
+        },
+        "linkerArgs": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Raw flags forwarded to the linker (`-k<arg>`)."
+        },
+        "fpcArgs": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Raw escape-hatch compiler flags passed verbatim to `ppc*`."
+        }
+      }
+    },
+    "dependenciesSection": {
+      "type": "object",
+      "additionalProperties": {
+        "oneOf": [
+          { "type": "string" },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "path": { "type": "string", "description": "Local relative or absolute directory path." },
+              "version": { "type": "string", "description": "SemVer constraint." },
+              "git": { "type": "string", "description": "Git repository URL." },
+              "tag": { "type": "string", "description": "Git tag." },
+              "branch": { "type": "string", "description": "Git branch." },
+              "rev": { "type": "string", "description": "Exact Git commit SHA." },
+              "unitPaths": { "type": "array", "items": { "type": "string" } },
+              "includePaths": { "type": "array", "items": { "type": "string" } }
+            }
+          }
+        ]
+      }
+    },
+    "subOverlay": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "entry": { "type": "string" },
+        "output": { "type": "string" },
+        "toolchain": { "$ref": "#/definitions/toolchainSection" },
+        "build": { "$ref": "#/definitions/buildSection" },
+        "dependencies": { "$ref": "#/definitions/dependenciesSection" }
+      }
+    },
+    "packageSubOverlay": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "toolchain": { "$ref": "#/definitions/toolchainSection" },
+        "build": { "$ref": "#/definitions/buildSection" },
+        "dependencies": { "$ref": "#/definitions/dependenciesSection" }
+      }
+    },
+    "testOverlay": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["entry"],
+      "properties": {
+        "entry": { "type": "string", "description": "Entry test runner `.pas` program." },
+        "output": { "type": "string", "description": "Optional test binary output path." },
+        "toolchain": { "$ref": "#/definitions/toolchainSection" },
+        "build": { "$ref": "#/definitions/buildSection" },
+        "dependencies": { "$ref": "#/definitions/dependenciesSection" }
+      }
+    },
+    "programOrLibraryRoot": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["entry", "toolchain"],
+      "properties": {
+        "name": { "type": "string" },
+        "version": { "type": "string" },
+        "description": { "type": "string" },
+        "license": { "type": "string" },
+        "repository": { "type": "string" },
+        "authors": { "type": "array", "items": { "type": "string" } },
+        "entry": { "type": "string", "description": "Main `.pas` / `.lpr` entry file." },
+        "output": { "type": "string", "description": "Output executable/library path (OS extension appended automatically)." },
+        "toolchain": { "$ref": "#/definitions/toolchainSection" },
+        "build": { "$ref": "#/definitions/buildSection" },
+        "dependencies": { "$ref": "#/definitions/dependenciesSection" },
+        "test": { "$ref": "#/definitions/testOverlay" },
+        "targets": {
+          "type": "object",
+          "additionalProperties": { "$ref": "#/definitions/subOverlay" }
+        },
+        "profiles": {
+          "type": "object",
+          "additionalProperties": { "$ref": "#/definitions/subOverlay" }
+        }
+      }
+    },
+    "packageRoot": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["toolchain"],
+      "properties": {
+        "name": { "type": "string" },
+        "version": { "type": "string" },
+        "description": { "type": "string" },
+        "license": { "type": "string" },
+        "repository": { "type": "string" },
+        "authors": { "type": "array", "items": { "type": "string" } },
+        "toolchain": { "$ref": "#/definitions/toolchainSection" },
+        "build": { "$ref": "#/definitions/buildSection" },
+        "dependencies": { "$ref": "#/definitions/dependenciesSection" },
+        "test": { "$ref": "#/definitions/testOverlay" },
+        "targets": {
+          "type": "object",
+          "additionalProperties": { "$ref": "#/definitions/packageSubOverlay" }
+        },
+        "profiles": {
+          "type": "object",
+          "additionalProperties": { "$ref": "#/definitions/packageSubOverlay" }
+        }
+      }
+    }
+  }
+}

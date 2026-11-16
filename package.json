@@ -1,0 +1,221 @@
+{
+  "name": "vscode-nikrun",
+  "displayName": "Nikrun — Free Pascal & Object Pascal",
+  "description": "Zero-config Free Pascal & Object Pascal IDE support powered by Nikrun (nik lsp, SDK switcher, nik.yaml schema & build tasks).",
+  "version": "0.1.0",
+  "publisher": "nikrun",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/nikrun/vscode.git"
+  },
+  "bugs": {
+    "url": "https://github.com/nikrun/vscode/issues"
+  },
+  "homepage": "https://github.com/nikrun/vscode#readme",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Programming Languages",
+    "Linters",
+    "Other"
+  ],
+  "keywords": [
+    "pascal",
+    "objectpascal",
+    "freepascal",
+    "fpc",
+    "nikrun",
+    "nik"
+  ],
+  "activationEvents": [
+    "workspaceContains:**/nik.yaml",
+    "workspaceContains:**/nik.yml",
+    "onLanguage:objectpascal"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "languages": [
+      {
+        "id": "objectpascal",
+        "aliases": [
+          "Object Pascal",
+          "Free Pascal",
+          "Pascal"
+        ],
+        "extensions": [
+          ".pas",
+          ".pp",
+          ".lpr",
+          ".dpr",
+          ".inc"
+        ],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "objectpascal",
+        "scopeName": "source.pascal.nikrun",
+        "path": "./syntaxes/objectpascal.tmLanguage.json"
+      }
+    ],
+    "yamlValidation": [
+      {
+        "fileMatch": [
+          "nik.yaml",
+          "nik.yml"
+        ],
+        "url": "./schemas/nik-yaml.schema.json"
+      }
+    ],
+    "commands": [
+      {
+        "command": "nikrun.initProject",
+        "title": "Nikrun: Initialize Project (nik init)"
+      },
+      {
+        "command": "nikrun.restartLanguageServer",
+        "title": "Nikrun: Restart Language Server (nik lsp)"
+      },
+      {
+        "command": "nikrun.selectSdk",
+        "title": "Nikrun: Select Project FPC Version or Install SDK"
+      },
+      {
+        "command": "nikrun.selectProfile",
+        "title": "Nikrun: Select Active Build Profile"
+      },
+      {
+        "command": "nikrun.buildProject",
+        "title": "Nikrun: Build Project (nik build)"
+      },
+      {
+        "command": "nikrun.cleanBuildProject",
+        "title": "Nikrun: Clean & Rebuild Project (nik build --clean)"
+      },
+      {
+        "command": "nikrun.showOutput",
+        "title": "Nikrun: Show Language Server Output"
+      }
+    ],
+    "taskDefinitions": [
+      {
+        "type": "nik",
+        "required": [
+          "command"
+        ],
+        "properties": {
+          "command": {
+            "type": "string",
+            "enum": [
+              "build"
+            ],
+            "description": "The nik CLI command to execute."
+          },
+          "profile": {
+            "type": "string",
+            "description": "Named profile from nik.yaml (e.g. debug, release)."
+          },
+          "clean": {
+            "type": "boolean",
+            "description": "Clean checkout build cache (.nik/cache) before building."
+          },
+          "manifest": {
+            "type": "string",
+            "description": "Optional path to nik.yaml or project directory."
+          }
+        }
+      }
+    ],
+    "problemMatchers": [
+      {
+        "name": "nik-fpc",
+        "owner": "nik-fpc",
+        "fileLocation": [
+          "autoDetect",
+          "${workspaceFolder}"
+        ],
+        "pattern": {
+          "regexp": "^\\s*(.+)\\((\\d+)(?:,(\\d+))?\\):\\s+(fatal|error|warning|note|hint)(?:\\s+\\[(\\d+)\\])?:\\s+(.*)$",
+          "file": 1,
+          "line": 2,
+          "column": 3,
+          "severity": 4,
+          "code": 5,
+          "message": 6
+        }
+      },
+      {
+        "name": "nik-manifest",
+        "owner": "nik-manifest",
+        "fileLocation": [
+          "autoDetect",
+          "${workspaceFolder}"
+        ],
+        "pattern": {
+          "regexp": "^(error):\\s+((?:[A-Za-z]:)?[^:]+):(\\d+)(?::(\\d+))?:\\s+(.*)$",
+          "severity": 1,
+          "file": 2,
+          "line": 3,
+          "column": 4,
+          "message": 5
+        }
+      }
+    ],
+    "configuration": {
+      "title": "Nikrun",
+      "properties": {
+        "nikrun.cliPath": {
+          "type": "string",
+          "default": "",
+          "description": "Explicit path to the `nik` CLI executable. When empty, resolves `~/.nikrun/bin/nik` (or `$NIKRUN_HOME/bin/nik`) and `PATH` automatically."
+        },
+        "nikrun.nikrunHome": {
+          "type": "string",
+          "default": "",
+          "description": "Optional override for `--nikrun-home` / `NIKRUN_HOME` (defaults to `~/.nikrun`)."
+        },
+        "nikrun.profile": {
+          "type": "string",
+          "default": "debug",
+          "description": "Active `nik.yaml` profile passed to `nik lsp` and `nik build` (e.g. `debug`, `release`)."
+        },
+        "nikrun.lsp.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable the built-in `nik lsp` Free Pascal Language Server."
+        },
+        "nikrun.lsp.logFile": {
+          "type": "string",
+          "default": "",
+          "description": "Optional file path passed to `nik lsp --log-file` for JSON-RPC protocol debugging."
+        },
+        "nikrun.trace.server": {
+          "type": "string",
+          "enum": [
+            "off",
+            "messages",
+            "verbose"
+          ],
+          "default": "off",
+          "description": "Traces JSON-RPC communication between VS Code and `nik lsp`."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "vscode:prepublish": "npm run compile"
+  },
+  "dependencies": {
+    "vscode-languageclient": "^9.0.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "@types/vscode": "^1.85.0",
+    "typescript": "^5.4.0"
+  }
+}
