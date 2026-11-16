@@ -4,7 +4,7 @@
 
 1. **[`nikrun/vscode`](https://github.com/nikrun/vscode)** *(this repository)* — Official `vscode-nikrun` Visual Studio Code extension (`src/*.ts`, `syntaxes/`, `schemas/`).
 2. **[`nikrun/cli`](https://github.com/nikrun/cli)** — Standalone `nik` CLI (`nik sdk`, `nik init`, `nik build`, `nik lsp`) and `nikrun-lsp-protocol`.
-3. **[`nikrun/sdk`](https://github.com/nikrun/sdk)** — Portable Free Pascal SDK build pipeline and GitHub Releases (`fpc-sdk-latest`).
+3. **[`nikrun/sdk`](https://github.com/nikrun/sdk)** — Portable Free Pascal SDK build pipeline and GitHub Releases (`latest`).
 
 ---
 
