@@ -133,7 +133,7 @@ jobs:
 
           gh release create "${VERSION_TAG}" \
             --repo "${{ github.repository }}" \
-            --title "vscode-nikrun ${VERSION_TAG}" \
+            --title "${VERSION_TAG}" \
             "${NOTES_ARGS[@]}" \
             $PRERELEASE_FLAG \
             ./artifacts/*
