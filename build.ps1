@@ -104,7 +104,7 @@ try {
     npx --yes @vscode/vsce package -o $VsixOutPath
     if ($LASTEXITCODE -ne 0 -and $null -ne $LASTEXITCODE) { throw "vsce package failed" }
 
-    $VsixSha256 = New-Sha256File -FilePath $VsixOutPath
+    $VsixSha256 = Get-FileSha256 -FilePath $VsixOutPath
 
     $downloads = [ordered]@{}
     if (Test-Path $VsixOutPath) {
