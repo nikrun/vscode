@@ -1,6 +1,6 @@
 # Nikrun for Visual Studio Code (`vscode-nikrun`)
 
-[![Build vscode-nikrun Extension](https://github.com/nikrun/vscode/actions/workflows/build-vscode.yml/badge.svg)](https://github.com/nikrun/vscode/actions/workflows/build-vscode.yml)
+[![Build and Test](https://github.com/nikrun/vscode/actions/workflows/build.yml/badge.svg)](https://github.com/nikrun/vscode/actions/workflows/build.yml)
 
 > **Official Visual Studio Code Extension for [Nikrun](https://github.com/nikrun) (Free Pascal & Object Pascal)**
 
@@ -37,13 +37,18 @@
 1. Build the `nik` CLI in a sibling [`nikrun/cli`](https://github.com/nikrun/cli) checkout (or install it into `~/.nikrun/bin`):
    ```powershell
    cd ..\cli
-   .\build.ps1 -Profile release -Install
+   .\build.ps1 -Profile release -Install -RunTests:$false
    ```
-2. Install extension dependencies and compile TypeScript:
+2. Initialize submodules, install extension dependencies, and compile/bundle TypeScript (`dist/extension.js`):
    ```powershell
    cd ..\vscode
+   git submodule update --init --recursive
    npm install
    npm run compile
+   ```
+   Or run the full release packaging & test pipeline (`.vsix`, CycloneDX SBOM, `release-notes.json`, and `manifest.json` in `.out/`):
+   ```powershell
+   .\build.ps1
    ```
 3. Open this repository (or the parent `nikrun.code-workspace`) in VS Code and press **`F5`** (*Run vscode-nikrun Extension*) to launch an Extension Development Host window.
 

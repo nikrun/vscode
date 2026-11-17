@@ -1,6 +1,10 @@
 node_modules/
+.out/
+artifacts/
+.work/
 out/
 dist/
 *.vsix
+*.vsix.sha256
 .DS_Store
 Thumbs.db

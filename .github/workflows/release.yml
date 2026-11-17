@@ -1,0 +1,146 @@
+name: Build and Test and Publish
+
+on:
+  workflow_dispatch:
+    inputs:
+      channel:
+        description: 'Release Channel'
+        required: true
+        type: choice
+        default: 'insider'
+        options:
+          - stable
+          - insider
+      increment:
+        description: 'Increment Version Number (Stable only)'
+        required: true
+        type: choice
+        default: 'none'
+        options:
+          - none
+          - patch
+          - minor
+          - major
+  schedule:
+    - cron: '47 23 * * *' # 23:47 UTC = 01:47 CEST / 00:47 CET
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  check-activity:
+    name: Check Recent Commits
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    outputs:
+      should_run: ${{ steps.check.outputs.should_run }}
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Check for New Commits Since Last Release
+        id: check
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.NIKRUN_PAT || github.token }}
+        run: |
+          set -euo pipefail
+          CHANNEL="${{ github.event_name == 'schedule' && 'insider' || github.event.inputs.channel }}"
+
+          if [ "${{ github.event_name }}" = "schedule" ] && [ "$CHANNEL" = "insider" ]; then
+            echo "Automated scheduled run for Insider channel detected. Checking last Insider release in ${{ github.repository }}..."
+            LAST_RELEASE_DATE=$(gh release list --repo "${{ github.repository }}" --limit 50 --json tagName,publishedAt,isPrerelease --jq '[.[] | select(.isPrerelease == true)][0].publishedAt' 2>/dev/null || true)
+
+            if [ -n "$LAST_RELEASE_DATE" ] && [ "$LAST_RELEASE_DATE" != "null" ]; then
+              echo "Last Insider release published at: $LAST_RELEASE_DATE"
+              NEW_COMMITS=$(git log -1 --since="$LAST_RELEASE_DATE" --format=%H)
+              if [ -z "$NEW_COMMITS" ]; then
+                echo "No new commits since last Insider release. Skipping scheduled build."
+                echo "should_run=false" >> "$GITHUB_OUTPUT"
+              else
+                echo "New commit found ($NEW_COMMITS) since last release. Proceeding with build."
+                echo "should_run=true" >> "$GITHUB_OUTPUT"
+              fi
+            else
+              echo "No previous Insider release found. Proceeding with build."
+              echo "should_run=true" >> "$GITHUB_OUTPUT"
+            fi
+          else
+            echo "Manual trigger or non-scheduled build (event=${{ github.event_name }}, channel=$CHANNEL). Proceeding with build without commit check."
+            echo "should_run=true" >> "$GITHUB_OUTPUT"
+          fi
+
+  release:
+    name: Build & Publish VS Code Extension Release
+    needs: check-activity
+    if: github.ref == 'refs/heads/main' && needs.check-activity.outputs.should_run == 'true'
+    runs-on: ubuntu-latest
+    env:
+      CHANNEL: ${{ github.event_name == 'schedule' && 'insider' || github.event.inputs.channel }}
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v7
+        with:
+          submodules: recursive
+          token: ${{ secrets.NIKRUN_PAT || github.token }}
+
+      - name: Resolve Version Context
+        id: version
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ ! -f version.txt ]; then
+            echo "Error: version.txt not found!"
+            exit 1
+          fi
+          CLEAN_VERSION=$(tr -d 'v\n\r ' < version.txt)
+          BUILD="${GITHUB_RUN_NUMBER}"
+          VERSION_TAG="v${CLEAN_VERSION}-build.${BUILD}-channel.${CHANNEL}"
+          echo "clean_version=$CLEAN_VERSION" >> "$GITHUB_OUTPUT"
+          echo "version_tag=$VERSION_TAG" >> "$GITHUB_OUTPUT"
+
+      - name: Run Build Action
+        uses: ./.github/actions/build
+        with:
+          clean-version: ${{ steps.version.outputs.clean_version }}
+          version-tag: ${{ steps.version.outputs.version_tag }}
+          channel: ${{ env.CHANNEL }}
+          github-token: ${{ secrets.NIKRUN_PAT || github.token }}
+
+      - name: Publish GitHub Release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.NIKRUN_PAT || github.token }}
+          VERSION_TAG: ${{ steps.version.outputs.version_tag }}
+          CLEAN_VERSION: ${{ steps.version.outputs.clean_version }}
+          CHANNEL: ${{ env.CHANNEL }}
+        run: |
+          set -euo pipefail
+          PRERELEASE_FLAG=""
+          if [ "$CHANNEL" != "stable" ]; then
+            PRERELEASE_FLAG="--prerelease"
+          fi
+
+          gh release delete "${VERSION_TAG}" --repo "${{ github.repository }}" --yes 2>/dev/null || true
+
+          NOTES_ARGS=(--notes "Automatically generated release.")
+          if [ -f .work/release-notes.md ]; then
+            NOTES_ARGS=(--notes-file .work/release-notes.md)
+          fi
+
+          gh release create "${VERSION_TAG}" \
+            --repo "${{ github.repository }}" \
+            --title "vscode-nikrun ${VERSION_TAG}" \
+            "${NOTES_ARGS[@]}" \
+            $PRERELEASE_FLAG \
+            ./artifacts/*
+
+      - name: Auto-Increment Version
+        uses: ./build-lib/github-actions/bump-version
+        with:
+          channel: ${{ env.CHANNEL }}
+          increment: ${{ github.event.inputs.increment || 'none' }}
+          github-token: ${{ secrets.NIKRUN_PAT || github.token }}

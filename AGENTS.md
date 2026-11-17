@@ -25,9 +25,13 @@
 Run commands from the repository root:
 
 ```powershell
-# Install dependencies
-npm install
+# Initialize shared build-lib submodule (first-time setup)
+git submodule update --init --recursive
 
-# Typecheck & compile TypeScript to out/
+# Full build, test, CycloneDX SBOM & VSIX package pipeline (outputs to .out/)
+.\build.ps1
+
+# Install dependencies & compile/bundle TypeScript to dist/extension.js for F5 debugging
+npm install
 npm run compile
 ```

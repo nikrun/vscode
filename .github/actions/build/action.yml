@@ -1,0 +1,94 @@
+name: Build and Package Nikrun VS Code Extension
+description: Encapsulates build, validation, CycloneDX SBOM generation, and VSIX packaging for vscode-nikrun
+
+inputs:
+  clean-version:
+    description: 'Clean version string (e.g., 0.1.0)'
+    required: false
+    default: ''
+  version-tag:
+    description: 'Explicit version tag string (e.g., v0.1.0-build.42-channel.insider). If empty, calculated automatically.'
+    required: false
+    default: ''
+  channel:
+    description: 'Release channel to use when calculating version tag (dev, insider, stable)'
+    required: false
+    default: 'dev'
+  working-directory:
+    description: 'Working directory path'
+    required: false
+    default: '.'
+  github-token:
+    description: 'GitHub token for repository/release operations and submodules'
+    required: false
+    default: ''
+
+runs:
+  using: composite
+  steps:
+    - name: Configure Git Submodule Authentication
+      if: inputs.github-token != ''
+      shell: bash
+      env:
+        INPUT_TOKEN: ${{ inputs.github-token }}
+      run: |
+        git config --global "url.https://${INPUT_TOKEN}@github.com/nikrun/.insteadOf" "https://github.com/nikrun/"
+
+    - name: Initialize Submodules
+      shell: bash
+      run: |
+        cd "${{ inputs.working-directory }}"
+        git submodule update --init --recursive
+
+    - name: Resolve Version Context
+      id: version
+      shell: bash
+      env:
+        INPUT_CLEAN_VERSION: ${{ inputs.clean-version }}
+        INPUT_VERSION_TAG: ${{ inputs.version-tag }}
+        INPUT_CHANNEL: ${{ inputs.channel }}
+      run: |
+        set -euo pipefail
+        cd "${{ inputs.working-directory }}"
+
+        if [ -n "${INPUT_CLEAN_VERSION}" ]; then
+          CLEAN_VERSION="${INPUT_CLEAN_VERSION#v}"
+        elif [ -f version.txt ]; then
+          CLEAN_VERSION=$(tr -d 'v\n\r ' < version.txt)
+        elif [ -f package.json ]; then
+          CLEAN_VERSION=$(node -p "require('./package.json').version")
+        else
+          CLEAN_VERSION="0.1.0"
+        fi
+
+        if [ -n "${INPUT_VERSION_TAG}" ]; then
+          VERSION_TAG="${INPUT_VERSION_TAG}"
+        else
+          BUILD="${GITHUB_RUN_NUMBER:-0}"
+          CHANNEL="${INPUT_CHANNEL:-dev}"
+          VERSION_TAG="v${CLEAN_VERSION}-build.${BUILD}-channel.${CHANNEL}"
+        fi
+
+        echo "clean_version=$CLEAN_VERSION" >> "$GITHUB_OUTPUT"
+        echo "version_tag=$VERSION_TAG" >> "$GITHUB_OUTPUT"
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v7
+      with:
+        node-version: '22.x'
+
+    - name: Build Artifacts
+      shell: pwsh
+      env:
+        VERSION_TAG: ${{ steps.version.outputs.version_tag }}
+      run: |
+        Set-Location "${{ inputs.working-directory }}"
+        ./build.ps1 -OutDir artifacts -Version "$env:VERSION_TAG" -RunTests
+
+    - name: Upload Build Artifacts
+      uses: actions/upload-artifact@v7
+      with:
+        name: vscode-nikrun-artifacts
+        path: ${{ inputs.working-directory }}/artifacts/*
+        if-no-files-found: error
+        retention-days: 1

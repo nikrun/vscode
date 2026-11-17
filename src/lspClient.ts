@@ -14,6 +14,7 @@ import {
   resolveNikExecutable,
   verifyNikSupportsLsp
 } from './cli';
+import { Version } from './version';
 
 export class NikLspManager implements vscode.Disposable {
   private client: LanguageClient | undefined;
@@ -23,6 +24,7 @@ export class NikLspManager implements vscode.Disposable {
 
   constructor() {
     this.outputChannel = vscode.window.createOutputChannel('Nikrun Language Server');
+    this.outputChannel.appendLine(`[Nikrun] Extension vscode-nikrun ${Version} loaded.`);
   }
 
   public get isRunning(): boolean {
