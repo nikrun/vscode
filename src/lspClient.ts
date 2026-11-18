@@ -24,7 +24,7 @@ export class NikLspManager implements vscode.Disposable {
 
   constructor() {
     this.outputChannel = vscode.window.createOutputChannel('Nikrun Language Server');
-    this.outputChannel.appendLine(`[Nikrun] Extension vscode-nikrun ${Version} loaded.`);
+    this.outputChannel.appendLine(`[Nikrun] Extension nikrun.vscode ${Version} loaded.`);
   }
 
   public get isRunning(): boolean {
@@ -69,7 +69,7 @@ export class NikLspManager implements vscode.Disposable {
     const nikExe = resolveNikExecutable();
     if (!nikExe) {
       this.outputChannel.appendLine(
-        '[vscode-nikrun] Could not locate `nik` executable. Configure `nikrun.cliPath` or install Nikrun into `~/.nikrun/bin`.'
+        '[Nikrun] Could not locate `nik` executable. Configure `nikrun.cliPath` or install Nikrun into `~/.nikrun/bin`.'
       );
       return false;
     }
@@ -79,7 +79,7 @@ export class NikLspManager implements vscode.Disposable {
     const preflight = await verifyNikSupportsLsp(nikExe);
     if (!preflight.supported) {
       this.outputChannel.appendLine(
-        `[vscode-nikrun] Pre-flight check failed for '${nikExe} lsp --help':\n${preflight.detail}`
+        `[Nikrun] Pre-flight check failed for '${nikExe} lsp --help':\n${preflight.detail}`
       );
       const choice = await vscode.window.showWarningMessage(
         `Nikrun: The resolved CLI binary (${nikExe}) does not support 'nik lsp' (likely an older build). Update ~/.nikrun/bin/nik or configure 'nikrun.cliPath'.`,
@@ -151,7 +151,7 @@ export class NikLspManager implements vscode.Disposable {
       }
     };
 
-    this.outputChannel.appendLine(`[vscode-nikrun] Starting: ${nikExe} ${args.join(' ')}`);
+    this.outputChannel.appendLine(`[Nikrun] Starting: ${nikExe} ${args.join(' ')}`);
     const nextClient = new LanguageClient(
       'nikrunLsp',
       'Nikrun Free Pascal Language Server',
@@ -164,7 +164,7 @@ export class NikLspManager implements vscode.Disposable {
       this.client = nextClient;
       return true;
     } catch (err) {
-      this.outputChannel.appendLine(`[vscode-nikrun] Failed to start language server: ${String(err)}`);
+      this.outputChannel.appendLine(`[Nikrun] Failed to start language server: ${String(err)}`);
       return false;
     }
   }
@@ -179,7 +179,7 @@ export class NikLspManager implements vscode.Disposable {
         await current.stop();
       }
     } catch (err) {
-      this.outputChannel.appendLine(`[vscode-nikrun] Ignored error while stopping client: ${String(err)}`);
+      this.outputChannel.appendLine(`[Nikrun] Ignored error while stopping client: ${String(err)}`);
     } finally {
       watcher?.dispose();
     }

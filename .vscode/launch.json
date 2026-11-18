@@ -2,7 +2,7 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Run vscode-nikrun Extension",
+      "name": "Run Nikrun for VS Code Extension",
       "type": "extensionHost",
       "request": "launch",
       "args": [
@@ -15,7 +15,7 @@
       "preLaunchTask": "npm: compile"
     },
     {
-      "name": "Run vscode-nikrun (With Installed Extensions)",
+      "name": "Run Nikrun for VS Code (With Installed Extensions)",
       "type": "extensionHost",
       "request": "launch",
       "env": {

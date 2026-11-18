@@ -1,13 +1,13 @@
 <#
 .SYNOPSIS
-    Builds, tests, and packages the vscode-nikrun Visual Studio Code extension.
+    Builds, tests, and packages the Nikrun for VS Code extension (nikrun.vscode).
 
 .DESCRIPTION
     Unified build script aligned with the Nikrun/Niksphere CI & Release pipeline:
     - Resolves CleanVersion and VersionTag from version.txt (or -Version).
     - Runs build-lib Pester tests and extension validation tests when -RunTests is active.
-    - Generates CycloneDX npm SBOM (vscode-nikrun-<VersionTag>-sbom.cdx.json).
-    - Bundles TypeScript via esbuild and packages vscode-nikrun-<VersionTag>.vsix (+ .sha256).
+    - Generates CycloneDX npm SBOM (nikrun-vscode-<VersionTag>-sbom.cdx.json).
+    - Bundles TypeScript via esbuild and packages nikrun-vscode-<VersionTag>.vsix (+ .sha256).
     - Generates release-notes.json and manifest.json in -OutDir.
 #>
 [CmdletBinding(PositionalBinding = $false)]
@@ -41,7 +41,7 @@ if (-not (Test-Path $ResolvedOutDir)) {
     New-Item -ItemType Directory -Path $ResolvedOutDir -Force | Out-Null
 }
 
-Write-Host "Building vscode-nikrun..." -ForegroundColor Cyan
+Write-Host "Building Nikrun for VS Code (nikrun.vscode)..." -ForegroundColor Cyan
 Write-Host "  Version:       $VersionTag ($CleanVersion)"
 Write-Host "  OutDir:        $ResolvedOutDir"
 Write-Host "  RunTests:      $RunTests"
@@ -73,7 +73,7 @@ try {
     if ($GenerateSpecs) {
         $sbomFile = New-NpmCycloneDxSbom `
             -FrontendDir $RootDir `
-            -ProductKey "vscode-nikrun" `
+            -ProductKey "nikrun-vscode" `
             -VersionTag $VersionTag `
             -OutDir $ResolvedOutDir
     } else {
@@ -97,7 +97,7 @@ try {
         if ($LASTEXITCODE -ne 0 -and $null -ne $LASTEXITCODE) { throw "npm version failed" }
     }
 
-    $VsixName    = "vscode-nikrun-${VersionTag}.vsix"
+    $VsixName    = "nikrun-vscode-${VersionTag}.vsix"
     $VsixOutPath = Join-Path $ResolvedOutDir $VsixName
 
     Write-Host "  -> Packaging VSIX: $VsixOutPath"
@@ -122,7 +122,7 @@ try {
         $releaseNotesFile = New-ReleaseNotesSpec `
             -ChangelogPath $changelogPath `
             -CleanVersion $CleanVersion `
-            -ProductKey "vscode-nikrun" `
+            -ProductKey "nikrun-vscode" `
             -VersionTag $VersionTag `
             -OutDir $ResolvedOutDir
 
@@ -130,7 +130,7 @@ try {
         New-ReleaseNotesMarkdown `
             -ChangelogPath $changelogPath `
             -CleanVersion $CleanVersion `
-            -ProductName "Nikrun for VS Code (vscode-nikrun)" `
+            -ProductName "Nikrun for VS Code" `
             -VersionTag $VersionTag `
             -OutputPath $mdOutPath | Out-Null
     } else {
@@ -146,8 +146,8 @@ try {
     }
 
     New-Manifest `
-        -ProductKey "vscode-nikrun" `
-        -ProductName "Nikrun VS Code Extension" `
+        -ProductKey "nikrun-vscode" `
+        -ProductName "Nikrun for VS Code" `
         -VersionTag $VersionTag `
         -OutDir $ResolvedOutDir `
         -Downloads $downloads `
@@ -156,7 +156,7 @@ try {
     if (-not [string]::IsNullOrWhiteSpace($env:GITHUB_STEP_SUMMARY)) {
         $sizeKb = [math]::Round((Get-Item $VsixOutPath).Length / 1KB, 1)
         $summaryMd = @(
-            "### ``vscode-nikrun`` Extension Build"
+            "### Nikrun for VS Code (``nikrun.vscode``) Build"
             ""
             "| Property | Value |"
             "| :--- | :--- |"

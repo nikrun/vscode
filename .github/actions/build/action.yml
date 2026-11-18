@@ -1,5 +1,5 @@
-name: Build and Package Nikrun VS Code Extension
-description: Encapsulates build, validation, CycloneDX SBOM generation, and VSIX packaging for vscode-nikrun
+name: Build and Package Nikrun for VS Code
+description: Encapsulates build, validation, CycloneDX SBOM generation, and VSIX packaging for Nikrun for VS Code (nikrun.vscode)
 
 inputs:
   clean-version:
@@ -88,7 +88,7 @@ runs:
     - name: Upload Build Artifacts
       uses: actions/upload-artifact@v7
       with:
-        name: vscode-nikrun-artifacts
+        name: nikrun-vscode-artifacts
         path: ${{ inputs.working-directory }}/artifacts/*
         if-no-files-found: error
         retention-days: 1

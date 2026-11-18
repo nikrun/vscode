@@ -2,7 +2,7 @@ changelog:
   - version: 0.1.0
     changes:
       added:
-        - 'Initial release of `vscode-nikrun` Visual Studio Code extension'
+        - 'Initial release of Nikrun for VS Code (`nikrun.vscode`)'
         - 'Add zero-config `nik lsp` Free Pascal Language Server client with live compiler diagnostics, Document/Workspace Symbols, Go to Definition, PasDoc Hover, Signature Help, and Completion'
         - 'Add Status Bar Free Pascal SDK version & `nik.yaml` profile switchers plus interactive `nik init` project scaffolding'
         - 'Add complete JSON Schema (`schemas/nik-yaml.schema.json`) for `nik.yaml` (`program`, `library`, `package`)'

@@ -1,5 +1,5 @@
 {
-  "name": "vscode-nikrun",
+  "name": "vscode",
   "displayName": "Nikrun — Free Pascal & Object Pascal",
   "description": "Zero-config Free Pascal & Object Pascal IDE support powered by Nikrun (nik lsp, SDK switcher, nik.yaml schema & build tasks).",
   "version": "0.1.0",
@@ -243,3 +243,4 @@
     "typescript": "^5.4.0"
   }
 }
+
