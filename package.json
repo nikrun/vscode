@@ -5,6 +5,11 @@
   "version": "0.1.0",
   "publisher": "nikrun",
   "license": "GPL-3.0-or-later",
+  "icon": "images/icon.png",
+  "galleryBanner": {
+    "color": "#0b0e14",
+    "theme": "dark"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/nikrun/vscode.git"
@@ -36,6 +41,15 @@
   ],
   "main": "./dist/extension.js",
   "contributes": {
+    "icons": {
+      "nikrun": {
+        "description": "Nikrun emblem",
+        "default": {
+          "fontPath": "./images/nikrun-icons.woff",
+          "fontCharacter": "\\E001"
+        }
+      }
+    },
     "languages": [
       {
         "id": "objectpascal",
@@ -51,6 +65,10 @@
           ".dpr",
           ".inc"
         ],
+        "icon": {
+          "light": "./images/file-icon-light.svg",
+          "dark": "./images/file-icon-dark.svg"
+        },
         "configuration": "./language-configuration.json"
       }
     ],
@@ -207,11 +225,12 @@
   },
   "scripts": {
     "clean": "node -e \"const fs=require('fs'); for (const d of ['out', 'dist']) if(fs.existsSync(d)) fs.rmSync(d, {recursive:true, force:true});\"",
-    "vscode:prepublish": "npm run clean && npm run bundle",
+    "sync-brand": "node scripts/sync-brand.js",
+    "vscode:prepublish": "npm run clean && npm run sync-brand && npm run bundle",
     "bundle": "node scripts/bundle.js --minify",
     "bundle:dev": "node scripts/bundle.js",
-    "compile": "tsc -p ./ && npm run bundle:dev",
-    "watch": "node scripts/bundle.js --watch",
+    "compile": "npm run sync-brand && tsc -p ./ && npm run bundle:dev",
+    "watch": "npm run sync-brand && node scripts/bundle.js --watch",
     "test": "npm run clean && npm run compile && node scripts/validate-extension.js"
   },
   "dependencies": {

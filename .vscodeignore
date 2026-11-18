@@ -16,6 +16,7 @@ artifacts/**
 out/**
 node_modules/**
 build-lib/**
+brand/**
 build.ps1
 version.txt
 AGENTS.md

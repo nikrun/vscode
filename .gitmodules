@@ -2,3 +2,7 @@
 	path = build-lib
 	url = https://github.com/nikrun/build-lib.git
 	branch = main
+[submodule "brand"]
+	path = brand
+	url = https://github.com/nikrun/brand.git
+	branch = main

@@ -21,6 +21,20 @@ for (const rel of jsonAssets) {
 
 const pkg = JSON.parse(fs.readFileSync(path.join(rootDir, 'package.json'), 'utf8'));
 assert.strictEqual(pkg.main, './dist/extension.js', 'package.json main must point to ./dist/extension.js');
+assert.strictEqual(pkg.icon, 'images/icon.png', 'package.json icon must point to images/icon.png');
+
+const brandAssets = [
+  'images/icon.png',
+  'images/file-icon-light.svg',
+  'images/file-icon-dark.svg',
+  'images/nikrun-icons.woff'
+];
+for (const rel of brandAssets) {
+  const full = path.join(rootDir, rel);
+  assert.ok(fs.existsSync(full), `Missing synced brand asset: ${rel}`);
+  assert.ok(fs.statSync(full).size > 128, `Brand asset unexpectedly small: ${rel}`);
+  console.log(`[PASS] Verified ${rel}`);
+}
 
 const bundlePath = path.join(rootDir, 'dist', 'extension.js');
 assert.ok(fs.existsSync(bundlePath), 'Bundled dist/extension.js does not exist');

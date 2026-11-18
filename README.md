@@ -1,3 +1,10 @@
+<p align="left">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="https://nikrun.dev/brand/nikrun-lockup-dark-mono.png">
+    <img alt="Nikrun" src="https://nikrun.dev/brand/nikrun-lockup-light.png" height="52">
+  </picture>
+</p>
+
 # Nikrun for Visual Studio Code (`vscode-nikrun`)
 
 [![Build and Test](https://github.com/nikrun/vscode/actions/workflows/build.yml/badge.svg)](https://github.com/nikrun/vscode/actions/workflows/build.yml)

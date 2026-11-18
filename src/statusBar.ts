@@ -39,7 +39,7 @@ export class NikStatusBar implements vscode.Disposable {
 
     if (!manifestPath) {
       this.sdkItem.command = 'nikrun.initProject';
-      this.sdkItem.text = '$(add) Nikrun: Init Project';
+      this.sdkItem.text = '$(nikrun) Nikrun: Init Project';
       this.sdkItem.tooltip = 'No nik.yaml found in workspace. Click to initialize a Nikrun project (nik init).';
       this.sdkItem.backgroundColor = undefined;
       this.sdkItem.show();
@@ -48,7 +48,7 @@ export class NikStatusBar implements vscode.Disposable {
     }
 
     const profile = getActiveProfile();
-    this.profileItem.text = `$(tools) nik: ${profile}`;
+    this.profileItem.text = `$(nikrun) nik: ${profile}`;
     this.profileItem.show();
 
     this.sdkItem.command = 'nikrun.selectSdk';

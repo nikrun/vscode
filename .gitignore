@@ -4,6 +4,7 @@ artifacts/
 .work/
 out/
 dist/
+images/
 *.vsix
 .DS_Store
 Thumbs.db
