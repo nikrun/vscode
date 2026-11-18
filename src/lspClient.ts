@@ -120,7 +120,7 @@ export class NikLspManager implements vscode.Disposable {
 
     let consecutiveCrashes = 0;
     this.syncWatcher = vscode.workspace.createFileSystemWatcher(
-      '**/*.{yaml,yml,pas,pp,dpr,lpr,inc}'
+      '**/*.{yaml,yml,lock,pas,pp,dpr,lpr,inc}'
     );
 
     const clientOptions: LanguageClientOptions = {

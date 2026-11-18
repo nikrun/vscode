@@ -237,21 +237,54 @@
     },
     "dependenciesSection": {
       "type": "object",
+      "description": "Project or package dependencies mapped by local alias name.",
       "additionalProperties": {
         "oneOf": [
-          { "type": "string" },
+          {
+            "type": "string",
+            "pattern": "^(\\./|\\.\\./|/|[A-Za-z]:[/\\\\]|https?://|ssh://|file:///).+",
+            "description": "Compact dependency target: local directory or archive (`../my-lib`, `./vendor/pkg.zip`), direct remote archive (`https://example.com/pkg-1.0.zip`), or Git repository root URL with `@<semver>` or `@<commit>` (`https://github.com/owner/repo@^0.1.0`)."
+          },
           {
             "type": "object",
             "additionalProperties": false,
             "properties": {
-              "path": { "type": "string", "description": "Local relative or absolute directory path." },
-              "version": { "type": "string", "description": "SemVer constraint." },
-              "git": { "type": "string", "description": "Git repository URL." },
-              "tag": { "type": "string", "description": "Git tag." },
-              "branch": { "type": "string", "description": "Git branch." },
-              "rev": { "type": "string", "description": "Exact Git commit SHA." },
-              "unitPaths": { "type": "array", "items": { "type": "string" } },
-              "includePaths": { "type": "array", "items": { "type": "string" } }
+              "path": {
+                "type": "string",
+                "description": "Local directory or archive path (`.zip`, `.tar.gz`, `.tgz`). When combined with `url`, overrides that remote URL locally across the dependency tree."
+              },
+              "url": {
+                "type": "string",
+                "description": "Git repository root URL (`https://...` or `ssh://...`) or direct remote archive URL (`.zip`, `.tar.gz`, `.tgz`)."
+              },
+              "version": {
+                "type": "string",
+                "description": "SemVer constraint for Git tag resolution (e.g. `^0.2.0`, `~1.4.0`, `1.2.3`). Mutually exclusive with `rev`."
+              },
+              "rev": {
+                "type": "string",
+                "pattern": "^[0-9a-fA-F]{7,40}$",
+                "description": "Exact Git commit SHA (7..40 hex chars). Moving branch names are disallowed."
+              },
+              "subpath": {
+                "type": "string",
+                "description": "Optional relative subdirectory inside a monorepo or archive (e.g. `lsp-protocol`)."
+              },
+              "sha256": {
+                "type": "string",
+                "pattern": "^[0-9a-fA-F]{64}$",
+                "description": "Optional expected 64-character SHA-256 hex digest for direct `.zip`/`.tar.gz` archives."
+              },
+              "unitPaths": {
+                "type": "array",
+                "items": { "type": "string" },
+                "description": "Explicit unit search directories (`-Fu`) for legacy packages that do not contain a `nik.yaml`."
+              },
+              "includePaths": {
+                "type": "array",
+                "items": { "type": "string" },
+                "description": "Explicit include search directories (`-Fi`) for legacy packages that do not contain a `nik.yaml`."
+              }
             }
           }
         ]
@@ -319,7 +352,6 @@
     "packageRoot": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["toolchain"],
       "properties": {
         "name": { "type": "string" },
         "version": { "type": "string" },
