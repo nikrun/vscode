@@ -28,7 +28,7 @@
   - Real Free Pascal compiler diagnostics (`ppc* -Cn` errors, warnings, notes, hints) live as you type, using 250 ms debouncing and checkout-local unsaved editor overlays mapped to exact source lines & columns.
   - Hierarchical `Document Symbols` (Outline & Breadcrumbs), `Workspace Symbols`, `Go to Definition` deep into local packages and bundled Free Pascal `source/rtl` & `source/packages`, PasDoc `Hover` documentation, `Signature Help`, and `Completion`.
 - **One-Click SDK & Profile Switching:**
-  - Scaffold new projects (`Nikrun: Initialize Project` / `nik init`), switch your project's `nik.yaml` `toolchain.fpc` version (`3.2.2`, `3.2.4`, `3.3.1`), or install missing prebuilt SDKs straight from the status bar.
+  - Scaffold new projects (`Nikrun: Initialize Project` / `nik init`), switch your project's `nik.yaml` `toolchain.fpc` version (`3.2.2`, `3.2.4`, `3.3.1`), or install and update prebuilt SDKs (`nik sdk update`) straight from the status bar.
   - Toggle `debug`, `release`, or custom `nik.yaml` build profiles with automatic `nik lsp` reload.
 - **First-Class `nik.yaml` Authoring:**
   - Ships a complete JSON Schema (`schemas/nik-yaml.schema.json`) with validation and autocompletion for `program`, `library`, and `package` manifests.

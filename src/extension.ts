@@ -3,10 +3,13 @@ import {
   discoverProfilesFromManifest,
   execNikJson,
   findWorkspaceManifestPath,
+  formatShortCommit,
   getActiveProfile,
+  getHostTargetOsCpu,
   initCliContext,
   InitProjectResponse,
   readManifestFpcVersion,
+  RemoteSdkItem,
   RemoteSdkListResponse,
   resolveNikExecutable,
   SdkListResponse,
@@ -18,6 +21,26 @@ import { NikTaskProvider } from './taskProvider';
 
 let lspManager: NikLspManager | undefined;
 let statusBar: NikStatusBar | undefined;
+
+function pickHostRemoteEntry(entries: RemoteSdkItem[], version: string): RemoteSdkItem | undefined {
+  const verEntries = entries.filter((s) => s.fpcVersion === version);
+  const installed = verEntries.find((s) => s.installed);
+  if (installed) {
+    return installed;
+  }
+  const host = getHostTargetOsCpu();
+  const exactHost = verEntries.find((s) => s.targetOs === host.os && s.targetCpu === host.cpu);
+  if (exactHost) {
+    return exactHost;
+  }
+  if (host.os === 'win64' && host.cpu === 'aarch64') {
+    const winX64 = verEntries.find((s) => s.targetOs === 'win64' && s.targetCpu === 'x86_64');
+    if (winX64) {
+      return winX64;
+    }
+  }
+  return verEntries[0];
+}
 
 async function promptInstallSdkFlow(nikExe: string, preselectedVersion?: string): Promise<void> {
   if (preselectedVersion) {
@@ -37,26 +60,70 @@ async function promptInstallSdkFlow(nikExe: string, preselectedVersion?: string)
     );
 
     const uniqueVersions = Array.from(new Set(remote.sdks.map((s) => s.fpcVersion)));
-    const items: vscode.QuickPickItem[] = uniqueVersions.map((ver) => ({
-      label: `FPC ${ver}`,
-      description: remote.sdks.some((s) => s.fpcVersion === ver && s.installed) ? 'Installed' : 'Download & Install',
-      detail: `nik sdk install ${ver}`
-    }));
+    const items: Array<vscode.QuickPickItem & { version: string; subcommand: 'install' | 'update' }> =
+      uniqueVersions.map((ver) => {
+        const entry = pickHostRemoteEntry(remote.sdks, ver);
+        const remCommit = entry?.gitCommit ? formatShortCommit(entry.gitCommit) : '';
+        if (entry?.installed && entry.updateAvailable) {
+          const instCommit = formatShortCommit(entry.installedCommit);
+          return {
+            label: `$(sync) FPC ${ver}`,
+            description: `Update available (${instCommit} -> ${remCommit || 'latest'})`,
+            detail: `nik sdk update ${ver}`,
+            version: ver,
+            subcommand: 'update'
+          };
+        }
+        if (entry?.installed) {
+          const instCommit = formatShortCommit(entry.installedCommit ?? entry.gitCommit);
+          return {
+            label: `$(check) FPC ${ver}`,
+            description: `Installed (${instCommit})`,
+            detail: `nik sdk install ${ver}`,
+            version: ver,
+            subcommand: 'install'
+          };
+        }
+        return {
+          label: `$(cloud-download) FPC ${ver}`,
+          description: remCommit ? `Download & Install (${remCommit})` : 'Download & Install',
+          detail: `nik sdk install ${ver}`,
+          version: ver,
+          subcommand: 'install'
+        };
+      });
 
     const picked = await vscode.window.showQuickPick(items, {
-      placeHolder: 'Select a prebuilt Free Pascal SDK version to install into ~/.nikrun'
+      placeHolder: 'Select a prebuilt Free Pascal SDK version to install or update in ~/.nikrun'
     });
     if (!picked) {
       return;
     }
 
-    const versionSpec = picked.label.replace(/^FPC\s+/, '').trim();
     const term = vscode.window.createTerminal('Nikrun SDK Installer');
     term.show();
-    term.sendText(`"${nikExe}" sdk install ${versionSpec}`);
+    term.sendText(`"${nikExe}" sdk ${picked.subcommand} ${picked.version}`);
   } catch (err) {
     void vscode.window.showErrorMessage(`Nikrun: Failed to query remote SDK index: ${String(err)}`);
   }
+}
+
+async function runUpdateInstalledSdks(): Promise<void> {
+  const nikExe = resolveNikExecutable();
+  if (!nikExe) {
+    const action = await vscode.window.showWarningMessage(
+      'Nikrun (`nik`) executable was not found. Configure `nikrun.cliPath` or install Nikrun into `~/.nikrun/bin`.',
+      'Open Settings'
+    );
+    if (action === 'Open Settings') {
+      await vscode.commands.executeCommand('workbench.action.openSettings', 'nikrun.cliPath');
+    }
+    return;
+  }
+
+  const term = vscode.window.createTerminal('Nikrun SDK Updater');
+  term.show();
+  term.sendText(`"${nikExe}" sdk update`);
 }
 
 async function initWorkspaceProject(): Promise<void> {
@@ -141,7 +208,9 @@ async function selectOrInstallSdk(): Promise<void> {
 
   try {
     const local = await execNikJson<SdkListResponse>(nikExe, ['sdk', 'list']);
-    const items: Array<vscode.QuickPickItem & { action: 'switch' | 'install' | 'installMissing'; version?: string }> = [];
+    const items: Array<
+      vscode.QuickPickItem & { action: 'switch' | 'install' | 'installMissing' | 'updateAll'; version?: string }
+    > = [];
 
     if (currentFpc && !local.sdks.some((s) => s.fpcVersion === currentFpc)) {
       items.push({
@@ -159,27 +228,41 @@ async function selectOrInstallSdk(): Promise<void> {
       }
       seenVersions.add(sdk.fpcVersion);
       const isActive = sdk.fpcVersion === currentFpc;
+      const shortSha = formatShortCommit(sdk.gitCommit);
       items.push({
         label: `${isActive ? '$(check) ' : ''}FPC ${sdk.fpcVersion}`,
-        description: `${sdk.targetTriplet}${isActive ? ' (nik.yaml)' : ''}`,
+        description: `${sdk.targetTriplet} · ${shortSha}${isActive ? ' (nik.yaml)' : ''}`,
         detail: sdk.installPath,
         action: 'switch',
         version: sdk.fpcVersion
       });
     }
 
+    if (local.sdks.length > 0) {
+      items.push({
+        label: '$(sync) Update installed Free Pascal SDKs',
+        description: 'Check remote builds and run nik sdk update',
+        action: 'updateAll'
+      });
+    }
+
     items.push({
-      label: '$(cloud-download) Install another Free Pascal SDK...',
-      description: 'Query remote prebuilt Nikrun SDKs',
+      label: '$(cloud-download) Install or browse Free Pascal SDKs...',
+      description: 'Query remote prebuilt Nikrun SDKs (shows commits & updates)',
       action: 'install'
     });
 
     const chosen = await vscode.window.showQuickPick(items, {
       placeHolder: manifestPath
-        ? 'Select Free Pascal version for nik.yaml or install a new SDK'
-        : 'Install a Free Pascal SDK into ~/.nikrun'
+        ? 'Select Free Pascal version for nik.yaml, update, or install a new SDK'
+        : 'Install or update a Free Pascal SDK in ~/.nikrun'
     });
     if (!chosen) {
+      return;
+    }
+
+    if (chosen.action === 'updateAll') {
+      await runUpdateInstalledSdks();
       return;
     }
 
@@ -295,6 +378,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
       }
     }),
     vscode.commands.registerCommand('nikrun.selectSdk', selectOrInstallSdk),
+    vscode.commands.registerCommand('nikrun.updateSdks', runUpdateInstalledSdks),
     vscode.commands.registerCommand('nikrun.selectProfile', selectActiveProfile),
     vscode.commands.registerCommand('nikrun.buildProject', () => executeBuildTask(false)),
     vscode.commands.registerCommand('nikrun.cleanBuildProject', () => executeBuildTask(true)),

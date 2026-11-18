@@ -4,7 +4,7 @@ changelog:
       added:
         - 'Initial release of Nikrun for VS Code (`nikrun.vscode`)'
         - 'Add zero-config `nik lsp` Free Pascal Language Server client with live compiler diagnostics, Document/Workspace Symbols, Go to Definition, PasDoc Hover, Signature Help, and Completion'
-        - 'Add Status Bar Free Pascal SDK version & `nik.yaml` profile switchers plus interactive `nik init` project scaffolding'
+        - 'Add Status Bar Free Pascal SDK version & `nik.yaml` profile switchers, commit-aware SDK update command (`nik sdk update`), and interactive `nik init` project scaffolding'
         - 'Add complete JSON Schema (`schemas/nik-yaml.schema.json`) for `nik.yaml` (`program`, `library`, `package`)'
         - 'Add Object Pascal TextMate grammar (`&`-escaped identifiers, `.Member` accessors, directives, attributes) and `nik` build task provider'
         - 'Bundle the extension with `esbuild` and generate CycloneDX JSON SBOMs (`*-sbom.cdx.json`) during builds'

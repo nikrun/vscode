@@ -102,6 +102,10 @@
         "title": "Nikrun: Select Project FPC Version or Install SDK"
       },
       {
+        "command": "nikrun.updateSdks",
+        "title": "Nikrun: Update Installed SDKs (nik sdk update)"
+      },
+      {
         "command": "nikrun.selectProfile",
         "title": "Nikrun: Select Active Build Profile"
       },
@@ -243,4 +247,3 @@
     "typescript": "^5.4.0"
   }
 }
-

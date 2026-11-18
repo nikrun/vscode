@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 import {
   execNikJson,
   findWorkspaceManifestPath,
+  formatShortCommit,
   getActiveProfile,
   readManifestFpcVersion,
   resolveNikExecutable,
@@ -65,7 +66,7 @@ export class NikStatusBar implements vscode.Disposable {
         const match = sdkList.sdks.find((s) => s.fpcVersion === configuredFpc);
         if (match) {
           this.sdkItem.text = `$(package) FPC ${match.fpcVersion}`;
-          this.sdkItem.tooltip = `Project FPC SDK (nik.yaml): ${match.sdkId}\nTarget: ${match.targetTriplet}\nClick to change version or install another SDK`;
+          this.sdkItem.tooltip = `Project FPC SDK (nik.yaml): ${match.sdkId}\nTarget: ${match.targetTriplet}\nCommit: ${formatShortCommit(match.gitCommit)}\nClick to change version, update, or install another SDK`;
           this.sdkItem.backgroundColor = undefined;
         } else {
           this.sdkItem.text = `$(cloud-download) FPC ${configuredFpc} (Install)`;

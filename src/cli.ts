@@ -7,6 +7,7 @@ import * as vscode from 'vscode';
 export interface InstalledSdkItem {
   sdkId: string;
   fpcVersion: string;
+  gitCommit?: string;
   targetOs: string;
   targetCpu: string;
   targetTriplet: string;
@@ -16,11 +17,27 @@ export interface InstalledSdkItem {
 export interface RemoteSdkItem {
   sdkId: string;
   fpcVersion: string;
+  gitCommit?: string;
   targetOs: string;
   targetCpu: string;
   targetTriplet: string;
   sizeBytes: number;
   installed: boolean;
+  updateAvailable?: boolean;
+  installedSdkId?: string | null;
+  installedCommit?: string | null;
+}
+
+export function formatShortCommit(commit?: string | null): string {
+  const trimmed = (commit ?? '').trim().toLowerCase();
+  return trimmed.length > 0 ? trimmed.slice(0, 8) : 'unknown';
+}
+
+export function getHostTargetOsCpu(): { os: string; cpu: string } {
+  const hostOs =
+    process.platform === 'win32' ? 'win64' : process.platform === 'darwin' ? 'darwin' : 'linux';
+  const hostCpu = process.arch === 'arm64' ? 'aarch64' : 'x86_64';
+  return { os: hostOs, cpu: hostCpu };
 }
 
 export interface SdkListResponse {
