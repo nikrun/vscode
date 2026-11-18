@@ -56,4 +56,8 @@
 
 ## License
 
-Licensed under the [MIT License](./LICENSE).
+Copyright (c) 2026 The Nikrun Contributors.
+
+Licensed under the **GNU General Public License v3.0 or later** (`GPL-3.0-or-later`) — see [LICENSE](./LICENSE).
+
+> **Note:** Developing and building your own Object Pascal projects with `vscode-nikrun` and `nik` imposes no licensing restrictions on your source code or compiled binaries.

@@ -4,7 +4,7 @@
   "description": "Zero-config Free Pascal & Object Pascal IDE support powered by Nikrun (nik lsp, SDK switcher, nik.yaml schema & build tasks).",
   "version": "0.1.0",
   "publisher": "nikrun",
-  "license": "MIT",
+  "license": "GPL-3.0-or-later",
   "repository": {
     "type": "git",
     "url": "https://github.com/nikrun/vscode.git"
